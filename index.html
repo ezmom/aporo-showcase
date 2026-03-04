@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIアポろうくん バナーポートフォリオ</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d0d; color: #f0f0f0; font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif; }
+
+  /* ===== LOGIN ===== */
+  #login-screen {
+    position: fixed; inset: 0; background: #0d0d0d;
+    display: flex; align-items: center; justify-content: center; z-index: 9999;
+  }
+  .login-box {
+    text-align: center; padding: 48px 40px;
+    background: #1a1a1a; border: 1px solid #333; border-radius: 16px;
+    max-width: 400px; width: 90%;
+  }
+  .login-box .icon { font-size: 48px; margin-bottom: 16px; }
+  .login-box h2 { font-size: 22px; margin-bottom: 8px; color: #fff; }
+  .login-box p { color: #888; font-size: 14px; margin-bottom: 28px; }
+  .login-box input {
+    width: 100%; padding: 14px 18px; border-radius: 10px;
+    border: 1px solid #444; background: #111; color: #fff;
+    font-size: 18px; text-align: center; letter-spacing: 4px;
+    margin-bottom: 16px; outline: none;
+  }
+  .login-box input:focus { border-color: #667eea; }
+  .login-box button {
+    width: 100%; padding: 14px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
+  }
+  .login-box button:hover { opacity: 0.9; }
+  .login-error { color: #ff6b6b; font-size: 13px; margin-top: 10px; }
+
+  /* ===== MAIN ===== */
+  #main { display: none; }
+
+  header {
+    padding: 40px 24px 28px;
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 100%);
+    border-bottom: 1px solid #222;
+    text-align: center;
+  }
+  header .badge {
+    display: inline-block; padding: 4px 14px; border-radius: 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-size: 11px; font-weight: bold; letter-spacing: 1px; margin-bottom: 16px;
+  }
+  header h1 { font-size: clamp(22px, 5vw, 36px); font-weight: 900; margin-bottom: 8px; }
+  header h1 span { background: linear-gradient(135deg, #667eea, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  header p { color: #888; font-size: 14px; }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex; overflow-x: auto; padding: 0 16px;
+    background: #111; border-bottom: 1px solid #222; gap: 4px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: none; padding: 16px 24px; cursor: pointer;
+    font-size: 14px; font-weight: 600; color: #666;
+    border-bottom: 3px solid transparent; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: #ccc; }
+  .tab.active { color: #fff; border-bottom-color: #667eea; }
+
+  /* ===== CONTENT ===== */
+  .tab-content { display: none; padding: 32px 20px; max-width: 960px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  .concept-header { margin-bottom: 28px; }
+  .concept-header .label {
+    display: inline-block; padding: 4px 12px; border-radius: 6px;
+    font-size: 11px; font-weight: bold; letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .concept-a .label { background: #1a3a4a; color: #67c7ef; }
+  .concept-b .label { background: #2a3a1a; color: #a8ef67; }
+  .concept-c .label { background: #3a2a1a; color: #efb067; }
+  .concept-d .label { background: #3a1a2a; color: #ef67b0; }
+  .concept-header h2 { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+  .concept-header p { color: #888; font-size: 14px; line-height: 1.6; }
+
+  .banner-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (min-width: 640px) {
+    .banner-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 960px) {
+    .banner-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .banner-card {
+    background: #1a1a1a; border-radius: 12px; overflow: hidden;
+    border: 1px solid #2a2a2a; transition: transform 0.2s, border-color 0.2s;
+  }
+  .banner-card:hover { transform: translateY(-2px); border-color: #667eea; }
+  .banner-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  .banner-card .info { padding: 12px; }
+  .banner-card .info .num { font-size: 10px; color: #555; }
+  .banner-card .info .headline { font-size: 12px; font-weight: 600; margin-top: 2px; line-height: 1.4; }
+
+  /* ===== HYPOTHESIS ===== */
+  .hypothesis-badge {
+    display: inline-block; margin-top: 6px; padding: 2px 8px;
+    border-radius: 4px; font-size: 10px; color: #888;
+    background: #222; border: 1px solid #333;
+  }
+
+  /* ===== STRATEGY SECTION ===== */
+  .strategy-section {
+    margin-top: 40px; padding: 24px; background: #1a1a1a;
+    border-radius: 12px; border: 1px solid #2a2a2a;
+  }
+  .strategy-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #667eea; }
+  .strategy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .strategy-item { padding: 16px; background: #111; border-radius: 8px; }
+  .strategy-item .s-label { font-size: 10px; color: #555; margin-bottom: 4px; }
+  .strategy-item .s-value { font-size: 13px; font-weight: 600; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center; padding: 32px 20px;
+    color: #444; font-size: 12px; border-top: 1px solid #1a1a1a;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="icon">🤖</div>
+    <h2>AIアポろうくん<br>バナーポートフォリオ</h2>
+    <p>Claude Code × Banner Park v7.0 で生成<br>勉強会参加者限定公開</p>
+    <input type="password" id="pw-input" placeholder="パスワード" autocomplete="off">
+    <button onclick="checkPassword()">入る</button>
+    <div class="login-error" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+  <header>
+    <div class="badge">Claude Code × Banner Park v7.0</div>
+    <h1>AIアポろうくん<br><span>バナーポートフォリオ</span></h1>
+    <p>4コンセプト × 4仮説 = 16枚 — 完全自動生成 2026.03.04</p>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('a')">🔵 A: 育てなくていい部下</div>
+    <div class="tab" onclick="switchTab('b')">🟢 B: 自走する相棒</div>
+    <div class="tab" onclick="switchTab('c')">🟠 C: 送るほど当たる</div>
+    <div class="tab" onclick="switchTab('d')">🟣 D: 営業の複利</div>
+  </div>
+
+  <!-- CONCEPT A -->
+  <div class="tab-content concept-a active" id="tab-a">
+    <div class="concept-header">
+      <div class="label">CONCEPT A</div>
+      <h2>育てなくていい部下</h2>
+      <p>採用してすぐに使える。育成コスト0円。<br>「採用、やめました。AIアポろうくんにしました。」</p>
+    </div>
+    <div class="banner-grid">
+      <div class="banner-card">
+        <img src="images/banner_01_A.png" alt="採用、やめました。">
+        <div class="info">
+          <div class="num">A-01</div>
+          <div class="headline">採用、やめました。</div>
+          <div class="hypothesis-badge">常識否定型 × Z型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_02_A.png" alt="採用費より、AIを。">
+        <div class="info">
+          <div class="num">A-02</div>
+          <div class="headline">採用費より、AIを。</div>
+          <div class="hypothesis-badge">コスト比較型 × F型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_03_A.png" alt="育成コスト0円AI">
+        <div class="info">
+          <div class="num">A-03</div>
+          <div class="headline">育成コスト0円AI</div>
+          <div class="hypothesis-badge">数字訴求型 × 中央集中</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_04_A.png" alt="月5万で部長1人分？">
+        <div class="info">
+          <div class="num">A-04</div>
+          <div class="headline">月5万で部長1人分？</div>
+          <div class="hypothesis-badge">コスパ衝撃型 × 対角線</div>
+        </div>
+      </div>
+    </div>
+    <div class="strategy-section">
+      <h3>戦略サマリー</h3>
+      <div class="strategy-grid">
+        <div class="strategy-item"><div class="s-label">N1ターゲット</div><div class="s-value">採用コストに悩む中小企業経営者</div></div>
+        <div class="strategy-item"><div class="s-label">新認知戦略</div><div class="s-value">「採用の代替」という発想転換</div></div>
+        <div class="strategy-item"><div class="s-label">Round 1テスト</div><div class="s-value">常識否定 vs コスト比較 どちらが反応高いか</div></div>
+        <div class="strategy-item"><div class="s-label">KV哲学</div><div class="s-value">採用担当の机、AI化のビジュアル</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT B -->
+  <div class="tab-content concept-b" id="tab-b">
+    <div class="concept-header">
+      <div class="label">CONCEPT B</div>
+      <h2>自走する相棒</h2>
+      <p>送った後も、学び続ける。振り返りも、改善も全部やってくれる。<br>「AIと組む時代の、新しい営業スタイル。」</p>
+    </div>
+    <div class="banner-grid">
+      <div class="banner-card">
+        <img src="images/banner_05_B.png" alt="振り返りは、AIに任せろ。">
+        <div class="info">
+          <div class="num">B-05</div>
+          <div class="headline">振り返りは、AIに任せろ。</div>
+          <div class="hypothesis-badge">役割移譲型 × Z型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_06_B.png" alt="PDCAは、相棒に。">
+        <div class="info">
+          <div class="num">B-06</div>
+          <div class="headline">PDCAは、相棒に。</div>
+          <div class="hypothesis-badge">パートナー型 × F型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_07_B.png" alt="文面作成、0秒。">
+        <div class="info">
+          <div class="num">B-07</div>
+          <div class="headline">文面作成、0秒。</div>
+          <div class="hypothesis-badge">速度訴求型 × 中央集中</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_08_B.png" alt="送った後も、学び続ける。">
+        <div class="info">
+          <div class="num">B-08</div>
+          <div class="headline">送った後も、学び続ける。</div>
+          <div class="hypothesis-badge">AI進化型 × 対角線</div>
+        </div>
+      </div>
+    </div>
+    <div class="strategy-section">
+      <h3>戦略サマリー</h3>
+      <div class="strategy-grid">
+        <div class="strategy-item"><div class="s-label">N1ターゲット</div><div class="s-value">効率化したい現場の営業マン</div></div>
+        <div class="strategy-item"><div class="s-label">新認知戦略</div><div class="s-value">「送るだけツール」から「学習する相棒」へ</div></div>
+        <div class="strategy-item"><div class="s-label">Round 1テスト</div><div class="s-value">感情共感 vs 機能訴求 どちらが行動につながるか</div></div>
+        <div class="strategy-item"><div class="s-label">KV哲学</div><div class="s-value">人とAIが並走するビジュアル</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT C -->
+  <div class="tab-content concept-c" id="tab-c">
+    <div class="concept-header">
+      <div class="label">CONCEPT C</div>
+      <h2>送るほど当たる</h2>
+      <p>量じゃない。精度が上がる。使うたびに賢くなる営業AI。<br>「アポ率0.1%を、変えにきた。」</p>
+    </div>
+    <div class="banner-grid">
+      <div class="banner-card">
+        <img src="images/banner_09_C.png" alt="量は解決策じゃない。">
+        <div class="info">
+          <div class="num">C-09</div>
+          <div class="headline">量は解決策じゃない。</div>
+          <div class="hypothesis-badge">常識否定型 × Z型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_10_C.png" alt="アポ率0.1%、続けますか？">
+        <div class="info">
+          <div class="num">C-10</div>
+          <div class="headline">アポ率0.1%、続けますか？</div>
+          <div class="hypothesis-badge">問題直視型 × F型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_11_C.png" alt="送るほど、当たる。">
+        <div class="info">
+          <div class="num">C-11</div>
+          <div class="headline">送るほど、当たる。</div>
+          <div class="hypothesis-badge">精度向上型 × 中央集中</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_12_C.png" alt="使うたびに賢くなる営業AI">
+        <div class="info">
+          <div class="num">C-12</div>
+          <div class="headline">使うたびに賢くなる営業AI</div>
+          <div class="hypothesis-badge">AI進化型 × 対角線</div>
+        </div>
+      </div>
+    </div>
+    <div class="strategy-section">
+      <h3>戦略サマリー</h3>
+      <div class="strategy-grid">
+        <div class="strategy-item"><div class="s-label">N1ターゲット</div><div class="s-value">アポ率に課題を感じている営業責任者</div></div>
+        <div class="strategy-item"><div class="s-label">新認知戦略</div><div class="s-value">「量を増やす」から「精度が上がる」へ発想転換</div></div>
+        <div class="strategy-item"><div class="s-label">Round 1テスト</div><div class="s-value">問題指摘 vs 解決訴求 CTRに差が出るか</div></div>
+        <div class="strategy-item"><div class="s-label">KV哲学</div><div class="s-value">矢が的を外す→当たるのビジュアル対比</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT D -->
+  <div class="tab-content concept-d" id="tab-d">
+    <div class="concept-header">
+      <div class="label">CONCEPT D</div>
+      <h2>営業の複利</h2>
+      <p>使うほど差がつく。1年後、差は3倍以上。<br>「ツールは育たない。AIアポろうくんは、育つ。」</p>
+    </div>
+    <div class="banner-grid">
+      <div class="banner-card">
+        <img src="images/banner_13_D.png" alt="ツールは、育たない。">
+        <div class="info">
+          <div class="num">D-13</div>
+          <div class="headline">ツールは、育たない。</div>
+          <div class="hypothesis-badge">常識否定型 × Z型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_14_D.png" alt="使うほど差がつく、唯一のAI。">
+        <div class="info">
+          <div class="num">D-14</div>
+          <div class="headline">使うほど差がつく、唯一のAI。</div>
+          <div class="hypothesis-badge">競合差別化型 × F型視線</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_15_D.png" alt="1年後、差は3倍以上。">
+        <div class="info">
+          <div class="num">D-15</div>
+          <div class="headline">1年後、差は3倍以上。</div>
+          <div class="hypothesis-badge">数字未来型 × 中央集中</div>
+        </div>
+      </div>
+      <div class="banner-card">
+        <img src="images/banner_16_D.png" alt="営業にも、複利はある。">
+        <div class="info">
+          <div class="num">D-16</div>
+          <div class="headline">営業にも、複利はある。</div>
+          <div class="hypothesis-badge">概念転用型 × 対角線</div>
+        </div>
+      </div>
+    </div>
+    <div class="strategy-section">
+      <h3>戦略サマリー</h3>
+      <div class="strategy-grid">
+        <div class="strategy-item"><div class="s-label">N1ターゲット</div><div class="s-value">中長期での競合優位を考える経営者</div></div>
+        <div class="strategy-item"><div class="s-label">新認知戦略</div><div class="s-value">「ツール」から「資産」への概念転換</div></div>
+        <div class="strategy-item"><div class="s-label">Round 1テスト</div><div class="s-value">感情的差別化 vs 数字訴求 どちらがCVにつながるか</div></div>
+        <div class="strategy-item"><div class="s-label">KV哲学</div><div class="s-value">複利グラフ × 人の成長曲線の重なり</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Claude Code × Banner Park v7.0 × Nano Banana Pro (Gemini 3 Pro Image Preview)</p>
+    <p style="margin-top:6px;">生成: 2026.03.04 | AIアポろうくん by KASHIKA</p>
+  </footer>
+</div>
+
+<script>
+  const PASSWORD = 'dive2026';
+
+  // sessionStorageで認証状態保持
+  if (sessionStorage.getItem('aporo_auth') === 'ok') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+  }
+
+  document.getElementById('pw-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  function checkPassword() {
+    const val = document.getElementById('pw-input').value;
+    if (val === PASSWORD) {
+      sessionStorage.setItem('aporo_auth', 'ok');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main').style.display = 'block';
+    } else {
+      document.getElementById('pw-error').textContent = 'パスワードが違います';
+      document.getElementById('pw-input').value = '';
+    }
+  }
+
+  function switchTab(concept) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['a','b','c','d'][i] === concept);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => {
+      c.classList.toggle('active', c.id === 'tab-' + concept);
+    });
+  }
+</script>
+</body>
+</html>
